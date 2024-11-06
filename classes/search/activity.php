@@ -24,8 +24,6 @@
 
 namespace mod_chat\search;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Search area for mod_chat activities.
  *

@@ -24,8 +24,6 @@
 
 namespace mod_chat\analytics\indicator;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Social breadth indicator - chat.
  *
@@ -41,15 +39,28 @@ class social_breadth extends activity_base {
      * If there is a corresponding '_help' string this will be shown as well.
      *
      * @return \lang_string
+     * @throws \coding_exception
      */
     public static function get_name(): \lang_string {
         return new \lang_string('indicator:socialbreadth', 'mod_chat');
     }
 
+    /**
+     * Function get_indicator_type
+     *
+     * @return mixed
+     */
     public function get_indicator_type() {
         return self::INDICATOR_SOCIAL;
     }
 
+    /**
+     * Function get_social_breadth_level
+     *
+     * @param \cm_info $cm
+     *
+     * @return mixed
+     */
     public function get_social_breadth_level(\cm_info $cm) {
         return self::SOCIAL_LEVEL_2;
     }

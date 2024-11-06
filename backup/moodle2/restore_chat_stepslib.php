@@ -15,24 +15,29 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
+ * Define all the restore steps that will be used by the restore_chat_activity_task
+ *
  * @package    mod_chat
  * @subpackage backup-moodle2
- * @copyright 2010 onwards Eloy Lafuente (stronk7) {@link http://stronk7.com}
- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  2010 onwards Eloy Lafuente (stronk7) {@link http://stronk7.com}
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 /**
  * Define all the restore steps that will be used by the restore_chat_activity_task
- */
-
-/**
- * Structure step to restore one chat activity
+ *
+ * Class restore_chat_activity_structure_step
  */
 class restore_chat_activity_structure_step extends restore_activity_structure_step {
 
+    /**
+     * Function define_structure
+     *
+     * @return mixed
+     */
     protected function define_structure() {
 
-        $paths = array();
+        $paths = [];
         $userinfo = $this->get_setting_value('userinfo');
 
         $paths[] = new restore_path_element('chat', '/activity/chat');
@@ -44,6 +49,13 @@ class restore_chat_activity_structure_step extends restore_activity_structure_st
         return $this->prepare_activity_structure($paths);
     }
 
+    /**
+     * Function process_chat
+     *
+     * @param $data
+     *
+     * @throws dml_exception
+     */
     protected function process_chat($data) {
         global $DB;
 
@@ -61,6 +73,13 @@ class restore_chat_activity_structure_step extends restore_activity_structure_st
         $this->apply_activity_instance($newitemid);
     }
 
+    /**
+     * Function process_chat_message
+     *
+     * @param $data
+     *
+     * @throws dml_exception
+     */
     protected function process_chat_message($data) {
         global $DB;
 
@@ -76,6 +95,10 @@ class restore_chat_activity_structure_step extends restore_activity_structure_st
         $this->set_mapping('chat_message', $oldid, $newitemid); // Because of decode.
     }
 
+    /**
+     * Function after_execute
+     *
+     */
     protected function after_execute() {
         // Add chat related files, no need to match by itemname (just internally handled context).
         $this->add_related_files('mod_chat', 'intro', null);

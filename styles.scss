@@ -1,0 +1,92 @@
+.path-mod-chat {
+    #chat-container-box {
+        #chat-contact {
+            overflow: auto;
+            padding: 0.375rem 0.75rem;
+            .chat-contactbox {
+                position: relative;
+                display: flex;
+                padding: 1rem 0;
+                img {
+                    max-width: 100%;
+                    height: auto;
+                    border-radius: 50%;
+                }
+                .chat-message {
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    display: -webkit-box;
+                    -webkit-line-clamp: 1;
+                    -webkit-box-orient: vertical;
+                }
+                .chat-time {
+                    margin-bottom: 0;
+                    color: #48443dbf;
+                }
+            }
+        }
+        .chat-container-content-box {
+            border-left: 1px solid #8b847666;
+            border-radius: 0;
+            height: 100%;
+            .card-body {
+                height: 100%;
+            }
+        }
+        #chat-container {
+            height: 100%;
+            overflow: auto;
+            .text-system {
+                background-color: #8b84761a;
+                color: #898887;
+                border-color: transparent;
+                transition: all 0.3s ease;
+                font-size: 15px;
+                margin-bottom: 8px;
+            }
+            .area-text {
+                min-width: 240px;
+                .chat-text {
+                    margin: 0;
+                }
+                .text-muted {
+                    margin: 0;
+                    font-size: 12px;
+                    &, * {
+                        color: #4a5259bf !important;
+                    }
+                    .fa {
+                        font-size: 13px;
+                    }
+                }
+            }
+            .chat-box {
+                display: flex;
+                padding: 10px 0 0 60px;
+                .chat-text {
+                    padding: 0.75rem;
+                    background-color: #8b8476;
+                    color: #fff;
+                    border-radius: 0 5px 5px;
+                }
+            }
+            .chat-box-mymessage {
+                display: flex;
+                align-items: center;
+                justify-content: end;
+                flex-direction: row-reverse;
+                gap: 8px;
+                padding: 10px 0 0 0;
+                text-align: end;
+                .chat-text {
+                    padding: 0.375rem 0.75rem;
+                    background-color: #4fc9da;
+                    color: #fff;
+                    border-radius: 5px 0 5px 5px;
+                }
+            }
+        }
+    }
+}
+
+// 643x - 578

@@ -16,14 +16,20 @@
 
 /**
  * Library of functions for chat outside of the core api
+ *
+ * @package    mod_chat
+ * @copyright  1999 onwards Martin Dougiamas  {@link http://moodle.com}
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
+defined('MOODLE_INTERNAL') || die;
 
 require_once($CFG->dirroot . '/mod/chat/lib.php');
 require_once($CFG->libdir . '/portfolio/caller.php');
 
 /**
+ * chat_portfolio_caller
+ *
  * @package   mod_chat
  * @copyright 1999 onwards Martin Dougiamas  {@link http://moodle.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -41,17 +47,20 @@ class chat_portfolio_caller extends portfolio_module_caller_base {
     protected $participated;
 
     /**
+     * Function expected_callbackargs
+     *
      * @return array
      */
     public static function expected_callbackargs() {
-        return array(
-            'id'    => true,
-            'start' => false,
-            'end'   => false,
-        );
+        return ['id' => true, 'start' => false, 'end' => false];
     }
+
     /**
-     * @global object
+     * Function load_data
+     *
+     * @throws coding_exception
+     * @throws dml_exception
+     * @throws portfolio_caller_exception
      */
     public function load_data() {
         global $DB;
@@ -59,20 +68,20 @@ class chat_portfolio_caller extends portfolio_module_caller_base {
         if (!$this->cm = get_coursemodule_from_id('chat', $this->id)) {
             throw new portfolio_caller_exception('invalidid', 'chat');
         }
-        $this->chat = $DB->get_record('chat', array('id' => $this->cm->instance));
+        $this->chat = $DB->get_record('chat', ['id' => $this->cm->instance]);
         $select = 'chatid = ?';
-        $params = array($this->chat->id);
+        $params = [$this->chat->id];
         if ($this->start && $this->end) {
             $select .= ' AND timestamp >= ? AND timestamp <= ?';
             $params[] = $this->start;
             $params[] = $this->end;
         }
         $this->messages = $DB->get_records_select(
-                'chat_messages',
-                $select,
-                $params,
-                'timestamp ASC'
-            );
+            'chat_messages',
+            $select,
+            $params,
+            'timestamp ASC'
+        );
         $select .= ' AND userid = ?';
         $params[] = $this->user->id;
         $this->participated = $DB->record_exists_select(
@@ -81,19 +90,28 @@ class chat_portfolio_caller extends portfolio_module_caller_base {
             $params
         );
     }
+
     /**
-     * @return array
+     * Function base_supported_formats
+     *
+     * @return array|void
      */
     public static function base_supported_formats() {
-        return array(PORTFOLIO_FORMAT_PLAINHTML);
+        return [PORTFOLIO_FORMAT_PLAINHTML];
     }
+
     /**
+     * Function expected_time
      *
+     * @return string
      */
     public function expected_time() {
         return portfolio_expected_time_db(count($this->messages));
     }
+
     /**
+     * Function get_sha1
+     *
      * @return string
      */
     public function get_sha1() {
@@ -106,7 +124,10 @@ class chat_portfolio_caller extends portfolio_module_caller_base {
     }
 
     /**
+     * Function check_permissions
+     *
      * @return bool
+     * @throws coding_exception
      */
     public function check_permissions() {
         $context = context_module::instance($this->cm->id);
@@ -116,13 +137,16 @@ class chat_portfolio_caller extends portfolio_module_caller_base {
     }
 
     /**
-     * @todo Document this function
+     * Function prepare_package
+     *
+     * @throws coding_exception
+     * @throws dml_exception
      */
     public function prepare_package() {
         $content = '';
         $lasttime = 0;
-        foreach ($this->messages as $message) {  // We are walking FORWARDS through messages
-            $m = clone $message; // grrrrrr - this causes the sha1 to change as chat_format_message changes what it's passed.
+        foreach ($this->messages as $message) {  // We are walking FORWARDS through messages.
+            $m = clone $message; // This causes the sha1 to change as chat_format_message changes what it's passed.
             $formatmessage = chat_format_message($m, $this->cm->course, $this->user);
             if (!isset($formatmessage->html)) {
                 continue;
@@ -140,14 +164,18 @@ class chat_portfolio_caller extends portfolio_module_caller_base {
     }
 
     /**
-     * @return string
+     * Function display_name
+     *
+     * @return string|void
+     * @throws coding_exception
      */
     public static function display_name() {
         return get_string('modulename', 'chat');
     }
 
     /**
-     * @global object
+     * Function get_return_url
+     *
      * @return string
      */
     public function get_return_url() {
@@ -155,100 +183,5 @@ class chat_portfolio_caller extends portfolio_module_caller_base {
 
         return $CFG->wwwroot . '/mod/chat/report.php?id='
             . $this->cm->id . ((isset($this->start)) ? '&start=' . $this->start . '&end=' . $this->end : '');
-    }
-}
-
-/**
- * A chat event such a user entering or leaving a chat activity
- *
- * @package    mod_chat
- * @copyright  2012 Andrew Davis
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
-class event_message implements renderable {
-
-    /** @var string The URL of the profile of the user who caused the event */
-    public $senderprofile;
-
-    /** @var string The ready to display name of the user who caused the event */
-    public $sendername;
-
-    /** @var string Ready to display event time */
-    public $time;
-
-    /** @var string Event description */
-    public $event;
-
-    /** @var string The chat theme name */
-    public $theme;
-
-    /**
-     * event_message constructor
-     *
-     * @param string $senderprofile The URL of the profile of the user who caused the event
-     * @param string $sendername The ready to display name of the user who caused the event
-     * @param string $time Ready to display event time
-     * @param string $theme The chat theme name
-     */
-    public function __construct($senderprofile, $sendername, $time, $event, $theme) {
-
-        $this->senderprofile = $senderprofile;
-        $this->sendername = $sendername;
-        $this->time = $time;
-        $this->event = $event;
-        $this->theme = $theme;
-    }
-}
-
-/**
- * A chat message from a user
- *
- * @package    mod_chat
- * @copyright  2012 Andrew Davis
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
-class user_message implements renderable {
-
-    /** @var string The URL of the profile of the user sending the message */
-    public $senderprofile;
-
-    /** @var string The ready to display name of the user sending the message */
-    public $sendername;
-
-    /** @var string HTML for the avatar of the user sending the message */
-    public $avatar;
-
-    /** @var string Empty or a html class definition to append to the html */
-    public $mymessageclass;
-
-    /** @var string Ready to display message time */
-    public $time;
-
-    /** @var string The message */
-    public $message;
-
-    /** @var string The name of the chat theme to use */
-    public $theme;
-
-    /**
-     * user_message constructor
-     *
-     * @param string $senderprofile The URL of the profile of the user sending the message
-     * @param string $sendername The ready to display name of the user sending the message
-     * @param string $avatar HTML for the avatar of the user sending the message
-     * @param string $mymessageclass Empty or a html class definition to append to the html
-     * @param string $time Ready to display message time
-     * @param string $message The message
-     * @param string $theme The name of the chat theme to use
-     */
-    public function __construct($senderprofile, $sendername, $avatar, $mymessageclass, $time, $message, $theme) {
-
-        $this->senderprofile = $senderprofile;
-        $this->sendername = $sendername;
-        $this->avatar = $avatar;
-        $this->mymessageclass = $mymessageclass;
-        $this->time = $time;
-        $this->message = $message;
-        $this->theme = $theme;
     }
 }

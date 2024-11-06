@@ -23,7 +23,6 @@
  */
 
 namespace mod_chat\event;
-defined('MOODLE_INTERNAL') || die();
 
 /**
  * The mod_chat message sent event class.
@@ -49,6 +48,7 @@ class message_sent extends \core\event\base {
      * Return localised event name.
      *
      * @return string
+     * @throws \coding_exception
      */
     public static function get_name() {
         return get_string('eventmessagesent', 'mod_chat');
@@ -58,9 +58,10 @@ class message_sent extends \core\event\base {
      * Get URL related to the action
      *
      * @return \moodle_url
+     * @throws \moodle_exception
      */
     public function get_url() {
-        return new \moodle_url('/mod/chat/view.php', array('id' => $this->contextinstanceid));
+        return new \moodle_url('/mod/chat/view.php', ['id' => $this->contextinstanceid]);
     }
 
     /**
@@ -87,7 +88,12 @@ class message_sent extends \core\event\base {
         }
     }
 
+    /**
+     * Function get_objectid_mapping
+     *
+     * @return array|string
+     */
     public static function get_objectid_mapping() {
-        return array('db' => 'chat_messages', 'restore' => 'chat_message');
+        return ['db' => 'chat_messages', 'restore' => 'chat_message'];
     }
 }

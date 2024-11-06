@@ -21,8 +21,8 @@
  * @copyright  2017 Juan Leyva <juan@moodle.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+
 namespace mod_chat\external;
-defined('MOODLE_INTERNAL') || die();
 
 use core\external\exporter;
 
@@ -40,41 +40,41 @@ class chat_message_exporter extends exporter {
      * @return array
      */
     protected static function define_properties() {
-        return array(
-            'id' => array(
+        return [
+            'id' => [
                 'type' => PARAM_INT,
                 'description' => 'The message record id.',
-            ),
-            'chatid' => array(
+            ],
+            'chatid' => [
                 'type' => PARAM_INT,
                 'description' => 'The chat id.',
                 'default' => 0,
-            ),
-            'userid' => array(
+            ],
+            'userid' => [
                 'type' => PARAM_INT,
                 'description' => 'The user who wrote the message.',
                 'default' => 0,
-            ),
-            'groupid' => array(
+            ],
+            'groupid' => [
                 'type' => PARAM_INT,
                 'description' => 'The group this message belongs to.',
                 'default' => 0,
-            ),
-            'issystem' => array(
+            ],
+            'issystem' => [
                 'type' => PARAM_BOOL,
                 'description' => 'Whether is a system message or not.',
                 'default' => false,
-            ),
-            'message' => array(
+            ],
+            'message' => [
                 'type' => PARAM_RAW,
                 'description' => 'The message text.',
-            ),
-            'timestamp' => array(
+            ],
+            'timestamp' => [
                 'type' => PARAM_INT,
                 'description' => 'The message timestamp (indicates when the message was sent).',
                 'default' => 0,
-            ),
-        );
+            ],
+        ];
     }
 
     /**
@@ -83,9 +83,7 @@ class chat_message_exporter extends exporter {
      * @return array
      */
     protected static function define_related() {
-        return array(
-            'context' => 'context',
-        );
+        return ['context' => 'context'];
     }
 
     /**

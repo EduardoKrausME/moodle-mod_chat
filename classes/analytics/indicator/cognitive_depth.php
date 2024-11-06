@@ -24,8 +24,6 @@
 
 namespace mod_chat\analytics\indicator;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Cognitive depth indicator - chat.
  *
@@ -41,15 +39,28 @@ class cognitive_depth extends activity_base {
      * If there is a corresponding '_help' string this will be shown as well.
      *
      * @return \lang_string
+     * @throws \coding_exception
      */
     public static function get_name(): \lang_string {
         return new \lang_string('indicator:cognitivedepth', 'mod_chat');
     }
 
+    /**
+     * Function get_indicator_type
+     *
+     * @return mixed
+     */
     public function get_indicator_type() {
         return self::INDICATOR_COGNITIVE;
     }
 
+    /**
+     * Function get_cognitive_depth_level
+     *
+     * @param \cm_info $cm
+     *
+     * @return mixed
+     */
     public function get_cognitive_depth_level(\cm_info $cm) {
         return self::COGNITIVE_LEVEL_4;
     }

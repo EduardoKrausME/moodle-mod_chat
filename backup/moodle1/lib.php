@@ -23,8 +23,6 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Chat conversion handler
  */
@@ -50,16 +48,16 @@ class moodle1_mod_chat_handler extends moodle1_mod_handler {
      * @return array of {@link convert_path} instances
      */
     public function get_paths() {
-        return array(
+        return [
             new convert_path(
                 'chat', '/MOODLE_BACKUP/COURSE/MODULES/MOD/CHAT',
-                array(
-                    'newfields' => array(
-                        'introformat' => 0
-                    )
-                )
-            )
-        );
+                [
+                    'newfields' => [
+                        'introformat' => 0,
+                    ],
+                ],
+                ),
+        ];
     }
 
     /**
@@ -70,14 +68,14 @@ class moodle1_mod_chat_handler extends moodle1_mod_handler {
         global $CFG;
 
         // Get the course module id and context id.
-        $instanceid     = $data['id'];
-        $cminfo         = $this->get_cminfo($instanceid);
+        $instanceid = $data['id'];
+        $cminfo = $this->get_cminfo($instanceid);
         $this->moduleid = $cminfo['id'];
-        $contextid      = $this->converter->get_contextid(CONTEXT_MODULE, $this->moduleid);
+        $contextid = $this->converter->get_contextid(CONTEXT_MODULE, $this->moduleid);
 
         // Replay the upgrade step 2010050101.
         if ($CFG->texteditors !== 'textarea') {
-            $data['intro']       = text_to_html($data['intro'], false, false, true);
+            $data['intro'] = text_to_html($data['intro'], false, false, true);
             $data['introformat'] = FORMAT_HTML;
         }
 
@@ -86,14 +84,14 @@ class moodle1_mod_chat_handler extends moodle1_mod_handler {
 
         // Convert course files embedded into the intro.
         $this->fileman->filearea = 'intro';
-        $this->fileman->itemid   = 0;
+        $this->fileman->itemid = 0;
         $data['intro'] = moodle1_converter::migrate_referenced_files($data['intro'], $this->fileman);
 
         // Start writing chat.xml.
         $this->open_xml_writer("activities/chat_{$this->moduleid}/chat.xml");
-        $this->xmlwriter->begin_tag('activity', array('id' => $instanceid, 'moduleid' => $this->moduleid,
-            'modulename' => 'chat', 'contextid' => $contextid));
-        $this->xmlwriter->begin_tag('chat', array('id' => $instanceid));
+        $this->xmlwriter->begin_tag('activity',
+            ['id' => $instanceid, 'moduleid' => $this->moduleid, 'modulename' => 'chat', 'contextid' => $contextid]);
+        $this->xmlwriter->begin_tag('chat', ['id' => $instanceid]);
 
         foreach ($data as $field => $value) {
             if ($field <> 'id') {
@@ -129,7 +127,7 @@ class moodle1_mod_chat_handler extends moodle1_mod_handler {
         $this->xmlwriter->begin_tag('inforef');
         $this->xmlwriter->begin_tag('fileref');
         foreach ($this->fileman->get_fileids() as $fileid) {
-            $this->write_xml('file', array('id' => $fileid));
+            $this->write_xml('file', ['id' => $fileid]);
         }
         $this->xmlwriter->end_tag('fileref');
         $this->xmlwriter->end_tag('inforef');

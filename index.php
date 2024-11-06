@@ -14,30 +14,36 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+/**
+ * Chat daemon
+ *
+ * @package    mod_chat
+ * @copyright  1999 onwards Martin Dougiamas  {@link http://moodle.com}
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
 require_once('../../config.php');
 require_once('lib.php');
 
 $id = required_param('id', PARAM_INT);   // Course.
 
-$PAGE->set_url('/mod/chat/index.php', array('id' => $id));
+$PAGE->set_url('/mod/chat/index.php', ['id' => $id]);
 
-if (! $course = $DB->get_record('course', array('id' => $id))) {
+if (!$course = $DB->get_record('course', ['id' => $id])) {
     throw new \moodle_exception('invalidcourseid');
 }
 
 require_course_login($course);
 $PAGE->set_pagelayout('incourse');
 
-$params = array(
-    'context' => context_course::instance($id)
-);
+$params = ['context' => context_course::instance($id)];
 $event = \mod_chat\event\course_module_instance_list_viewed::create($params);
 $event->add_record_snapshot('course', $course);
 $event->trigger();
 
 // Get all required strings.
 $strchats = get_string('modulenameplural', 'chat');
-$strchat  = get_string('modulename', 'chat');
+$strchat = get_string('modulename', 'chat');
 
 // Print the header.
 $PAGE->navbar->add($strchats);
@@ -47,7 +53,7 @@ echo $OUTPUT->header();
 echo $OUTPUT->heading($strchats, 2);
 
 // Get all the appropriate data.
-if (! $chats = get_all_instances_in_course('chat', $course)) {
+if (!$chats = get_all_instances_in_course('chat', $course)) {
     notice(get_string('thereareno', 'moodle', $strchats), "../../course/view.php?id=$course->id");
     die();
 }
@@ -56,28 +62,28 @@ $usesections = course_format_uses_sections($course->format);
 
 // Print the list of instances (your module will probably extend this).
 
-$timenow  = time();
-$strname  = get_string('name');
+$timenow = time();
+$strname = get_string('name');
 
 $table = new html_table();
 
 if ($usesections) {
-    $strsectionname = get_string('sectionname', 'format_'.$course->format);
-    $table->head  = array ($strsectionname, $strname);
-    $table->align = array ('center', 'left');
+    $strsectionname = get_string('sectionname', 'format_' . $course->format);
+    $table->head = [$strsectionname, $strname];
+    $table->align = ['center', 'left'];
 } else {
-    $table->head  = array ($strname);
-    $table->align = array ('left');
+    $table->head = [$strname];
+    $table->align = ['left'];
 }
 
 $currentsection = '';
 foreach ($chats as $chat) {
     if (!$chat->visible) {
         // Show dimmed if the mod is hidden.
-        $link = "<a class=\"dimmed\" href=\"view.php?id=$chat->coursemodule\">".format_string($chat->name, true)."</a>";
+        $link = "<a class=\"dimmed\" href=\"view.php?id=$chat->coursemodule\">" . format_string($chat->name, true) . "</a>";
     } else {
         // Show normal if the mod is visible.
-        $link = "<a href=\"view.php?id=$chat->coursemodule\">".format_string($chat->name, true)."</a>";
+        $link = "<a href=\"view.php?id=$chat->coursemodule\">" . format_string($chat->name, true) . "</a>";
     }
     $printsection = '';
     if ($chat->section !== $currentsection) {
@@ -90,9 +96,9 @@ foreach ($chats as $chat) {
         $currentsection = $chat->section;
     }
     if ($usesections) {
-        $table->data[] = array ($printsection, $link);
+        $table->data[] = [$printsection, $link];
     } else {
-        $table->data[] = array ($link);
+        $table->data[] = [$link];
     }
 }
 

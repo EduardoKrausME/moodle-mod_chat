@@ -21,9 +21,8 @@
  * @copyright  2019 Simey Lameze <simey@moodle.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-namespace mod_chat\task;
 
-defined('MOODLE_INTERNAL') || die();
+namespace mod_chat\task;
 
 /**
  * The main schedule task for the chat module.
@@ -38,6 +37,7 @@ class cron_task extends \core\task\scheduled_task {
      * Get a descriptive name for this task (shown to admins).
      *
      * @return string
+     * @throws \coding_exception
      */
     public function get_name() {
         return get_string('crontask', 'mod_chat');
@@ -58,7 +58,7 @@ class cron_task extends \core\task\scheduled_task {
                         FROM {chat} c
                        WHERE c.id = {chat_messages}.chatid";
         $DB->delete_records_select('chat_messages', "($subselect) > 0 AND timestamp < (? - ($subselect) * ?)",
-                [$timenow, DAYSECS]);
+            [$timenow, DAYSECS]);
 
         $DB->delete_records_select('chat_messages_current', "timestamp < ?", [$timenow - 8 * HOURSECS]);
     }

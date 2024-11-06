@@ -22,21 +22,48 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+/**
+ * Function xmldb_chat_upgrade
+ *
+ * @param $oldversion
+ *
+ * @return bool
+ * @throws downgrade_exception
+ * @throws upgrade_exception
+ */
 function xmldb_chat_upgrade($oldversion) {
-    // Automatically generated Moodle v4.1.0 release upgrade line.
-    // Put any upgrade step following this.
+    global $CFG;
 
-    // Automatically generated Moodle v4.2.0 release upgrade line.
-    // Put any upgrade step following this.
+    if ($oldversion < 2024110600) {
 
-    // Automatically generated Moodle v4.3.0 release upgrade line.
-    // Put any upgrade step following this.
-
-    // Automatically generated Moodle v4.4.0 release upgrade line.
-    // Put any upgrade step following this.
-
-    // Automatically generated Moodle v4.5.0 release upgrade line.
-    // Put any upgrade step following this.
-
+        if (isset($CFG->chat_method)) {
+            set_config("method", $CFG->chat_method, "chat");
+        }
+        if (isset($CFG->chat_refresh_userlist)) {
+            set_config("refresh_userlist", $CFG->chat_refresh_userlist, "chat");
+        }
+        if (isset($CFG->chat_old_ping)) {
+            set_config("old_ping", $CFG->chat_old_ping, "chat");
+        }
+        if (isset($CFG->chat_refresh_room)) {
+            set_config("refresh_room", $CFG->chat_refresh_room, "chat");
+        }
+        if (isset($CFG->chat_normal_updatemode)) {
+            set_config("normal_updatemode", $CFG->chat_normal_updatemode, "chat");
+        }
+        if (isset($CFG->chat_serverhost)) {
+            set_config("serverhost", $CFG->chat_serverhost, "chat");
+        }
+        if (isset($CFG->chat_serverip)) {
+            set_config("serverip", $CFG->chat_serverip, "chat");
+        }
+        if (isset($CFG->chat_serverport)) {
+            set_config("serverport", $CFG->chat_serverport, "chat");
+        }
+        if (isset($CFG->chat_servermax)) {
+            set_config("servermax", $CFG->chat_servermax, "chat");
+        }
+        upgrade_plugin_savepoint(true, 2024110600, 'mod', 'chat');
+    }
     return true;
 }

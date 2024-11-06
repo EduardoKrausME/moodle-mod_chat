@@ -23,7 +23,6 @@
  */
 
 namespace mod_chat\event;
-defined('MOODLE_INTERNAL') || die();
 
 /**
  * The mod_chat instance list viewed event class.

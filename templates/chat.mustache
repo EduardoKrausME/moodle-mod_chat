@@ -1,0 +1,280 @@
+<div id="chat-container-box" class="row position-relative">
+    <div class="col-lg-3 col-xxl-2 box-col-4 p-0">
+        <div class="chat-div">
+            <div class="card">
+                <div class="card-header">
+                    <div class="d-flex align-items-center">
+                        <span class="chatdp h-45 w-45 d-flex-center">
+                            {{{myprofile.user_picture}}}
+                        </span>
+                        <div class="flex-grow-1 ps-2">
+                            <div class="fs-6">{{{myprofile.fullname}}}</div>
+                            <div class="text-muted f-s-12">{{{myprofile.profile}}}</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body m-0 p-0">
+                    <div class="content-wrapper">
+
+                        <div id="chat-contact"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-9 col-xxl-10 box-col-8 p-0">
+        <div class="card chat-container-content-box">
+            <div class="card-body m-0 p-0 chat-body">
+                <div id="chat-container"></div>
+            </div>
+            <div class="card-footer">
+                <div class="chat-footer d-flex">
+                    <div class="app-form flex-grow-1">
+                        <div class="input-group" style="gap:10px;">
+                            <input id="input-message" type="text" class="form-control b-r-6"
+                                   placeholder="Type a message">
+                            <button id="button-send" class="btn btn-sm btn-primary ms-2 me-2 b-r-4"
+                                    type="button">
+                                <i class="fa fa-send" style="font-size:15px;"></i>
+                                <span>{{#str}}send,chat{{/str}}</span></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{#js}}
+    require(['jquery'], function($) {
+        var gui_ajax = {
+
+            // Properties.
+            api        : M.cfg.wwwroot + '/mod/chat/chat_ajax.php?sesskey=' + M.cfg.sesskey,
+            cfg        : {},
+            interval   : null,
+            messages   : [],
+            scrollable : true,
+
+            // CFG
+            chat_lastrow  : "{{cfg.chat_lastrow}}",
+            chat_lasttime : "{{cfg.chat_lasttime}}",
+            sid           : "{{cfg.chatsid}}",
+
+            init : function() {
+                participantswidth = 180;
+                if (Y.one('#input-message').get('docWidth') < 640) {
+                    participantswidth = 120;
+                }
+
+                // Attach the default events for this module.
+                $('#button-send').click(this.send);
+
+
+                $('#input-message').on('keypress', function(e) {
+                    if (e.which === 13) {  // 13 é o código para a tecla Enter
+                        e.preventDefault(); // evita que o Enter crie uma nova linha
+                        this.send();        // chama a função this.send
+                    }
+                }.bind(this));
+
+                // Prepare and execute the first AJAX request of information.
+                Y.io(this.api, {
+                    method  : 'POST',
+                    data    : build_querystring({
+                        action    : 'init',
+                        chat_init : 1,
+                        chat_sid  : this.sid
+                    }),
+                    on      : {
+                        success : function(tid, outcome) {
+                            $('#input-message')
+                                    .removeAttr('disabled')
+                                    .val('')
+                                    .focus();
+                            try {
+                                var data = Y.JSON.parse(outcome.responseText);
+                            } catch (ex) {
+                                return;
+                            }
+                            this.update_users(data.users);
+                        }
+                    },
+                    context : this
+                });
+
+                var scope = this;
+                this.interval = setInterval(function() {
+                    scope.update_messages();
+                }, {{cfg.timer}});
+            },
+
+            append_message : function(key, message, row) {
+                var chat_container = $("#chat-container");
+
+                if (message.issystem == "1") {
+                    var htmlsystem = `
+                        <div class="text-center">
+                            <span class="badge text-system">${message.message}</span>
+                        </div>`;
+                    chat_container.append(htmlsystem);
+                } else {
+                    var myclass = "chat-box";
+                    if (message.mymessage) {
+                        myclass = "chat-box-mymessage";
+                    }
+                    var html = `
+                        <div class="position-relative">
+                            <div class="chat-box ${myclass}">
+                                ${message.picture}
+                                <div class="area-text">
+                                    <p class="chat-text">${message.message}</p>
+                                    <p class="text-muted">
+                                        <i class="fa fa-check text-primary"></i>
+                                        ${message.strtime}</p>
+                                </div>
+                            </div>
+                        </div>`;
+                    chat_container.append(html);
+
+                    if (message.type && message.type == 'beep') {
+                        var audioElement = document.createElement('audio');
+                        audioElement.setAttribute('src', '../beep.mp3');
+                        audioElement.play();
+                    }
+                }
+
+                chat_container.scrollTop(chat_container[0].scrollHeight);
+            },
+
+            send : function(e, beep) {
+                var messageinput = $('#input-message');
+
+                if ((messageinput.val() != '') || (typeof beep != 'undefined')) {
+                    $('#button-send').val("{{#str}}sending,chat{{/str}}");
+                    var data = {
+                        chat_message : (!beep) ? messageinput.val() : '',
+                        chat_sid     : this.sid
+                    };
+                    if (beep) {
+                        data.beep = beep
+                    }
+                    data.action = 'chat';
+
+                    Y.io(this.api, {
+                        method  : 'POST',
+                        data    : build_querystring(data),
+                        on      : {
+                            success : this.send_callback
+                        },
+                        context : this
+                    });
+                }
+            },
+
+            send_callback : function(tid, outcome, args) {
+                try {
+                    var data = Y.JSON.parse(outcome.responseText);
+                } catch (ex) {
+                    return;
+                }
+                $('#button-send').val("{{#str}}send,chat{{/str}}");
+                $('#input-message').val('');
+                clearInterval(this.interval);
+                this.update_messages();
+                var scope = this;
+                this.interval = setInterval(function() {
+                    scope.update_messages();
+                }, {{cfg.timer}});
+            },
+
+            update_messages : function() {
+                Y.io(this.api, {
+                    method  : 'POST',
+                    data    : build_querystring({
+                        action        : 'update',
+                        chat_lastrow  : this.chat_lastrow || false,
+                        chat_lasttime : this.chat_lasttime,
+                        chat_sid      : this.sid
+                    }),
+                    on      : {
+                        success : this.update_messages_callback
+                    },
+                    context : this
+                });
+            },
+
+            update_messages_callback : function(tid, outcome) {
+                try {
+                    var data = Y.JSON.parse(outcome.responseText);
+                } catch (ex) {
+                    return;
+                }
+                this.chat_lasttime = data.lasttime;
+                this.chat_lastrow = data.lastrow;
+                // Update messages.
+                for (var key in data.msgs) {
+                    if (!M.util.in_array(key, this.messages)) {
+                        this.messages.push(key);
+                        this.append_message(key, data.msgs[key], data.lastrow);
+                    }
+                }
+                // Update users.
+                this.update_users(data.users);
+                $('#input-message').focus();
+            },
+
+            update_users : function(users) {
+                if (!users) {
+                    return;
+                }
+
+                $("#chat-contact .chat-contactbox").addClass("remove-item");
+
+                for (var i in users) {
+                    var user = users[i];
+                    console.log(user);
+
+                    $(`#chat-contact #chat-user-${user.id}`).removeClass("remove-item");
+
+                    if (!document.getElementById(`user-${user.id}`)) {
+                        var userhtml = `
+                            <div id="chat-user-${user.id}"
+                                 class="chat-contactbox d-flex align-items-center">
+                                ${user.picture}
+                                <div class="flex-grow-1 text-start mg-s-50">
+                                    <div class="fs-6">${user.name}</div>
+                                    <div class="text-muted f-s-12">${user.profile}</div>
+                                </div>
+                            </div>`;
+                        $("#chat-contact").append(userhtml);
+                    }
+                }
+
+                // $(`#chat-contact .remove-item`).remove();
+            }
+        };
+
+        gui_ajax.init();
+
+        function adjustChatContainerHeight() {
+            var windowHeight = $(window).height();
+            var headerHeight = $("#header").outerHeight();
+            if (!headerHeight) {
+                headerHeight = 90;
+            }
+            var newHeight = windowHeight - headerHeight - 30;
+            $("#chat-container-box").height(newHeight);
+            $("#chat-container").height(newHeight - 65);
+            $("#chat-contact").height(newHeight - 65);
+        }
+
+        // Chama a função para ajustar a altura inicialmente
+        adjustChatContainerHeight();
+
+        // Ajusta a altura quando a janela é redimensionada
+        $(window).resize(function() {
+            adjustChatContainerHeight();
+        });
+    });
+{{/js}}

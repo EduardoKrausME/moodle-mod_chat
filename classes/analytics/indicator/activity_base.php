@@ -24,8 +24,6 @@
 
 namespace mod_chat\analytics\indicator;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Activity base class.
  *
@@ -41,8 +39,7 @@ abstract class activity_base extends \core_analytics\local\indicator\community_o
      * @return string[]
      */
     protected function feedback_viewed_events() {
-        return array('\mod_chat\event\course_module_viewed', '\mod_chat\event\message_sent',
-            '\mod_chat\event\sessions_viewed');
+        return ['\mod_chat\event\course_module_viewed', '\mod_chat\event\message_sent', '\mod_chat\event\sessions_viewed'];
     }
 
     /**
@@ -51,7 +48,7 @@ abstract class activity_base extends \core_analytics\local\indicator\community_o
      * @return string[]
      */
     protected function feedback_replied_events() {
-        return array('\mod_chat\event\message_sent');
+        return ['\mod_chat\event\message_sent'];
     }
 
     /**
@@ -62,6 +59,7 @@ abstract class activity_base extends \core_analytics\local\indicator\community_o
      * @param int $userid
      * @param string[] $eventnames
      * @param int $after
+     *
      * @return bool
      */
     protected function feedback_post_action(\cm_info $cm, $contextid, $userid, $eventnames, $after = false) {

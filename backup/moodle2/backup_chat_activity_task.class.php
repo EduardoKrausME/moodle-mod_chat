@@ -23,7 +23,7 @@
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
+defined('MOODLE_INTERNAL') || die;
 
 require_once($CFG->dirroot . '/mod/chat/backup/moodle2/backup_chat_stepslib.php');
 
@@ -49,6 +49,7 @@ class backup_chat_activity_task extends backup_activity_task {
      * Encodes URLs to the index.php and view.php scripts
      *
      * @param string $content some HTML text that eventually contains URLs to the activity instance scripts
+     *
      * @return string the content with the URLs encoded
      */
     public static function encode_content_links($content) {
@@ -57,11 +58,11 @@ class backup_chat_activity_task extends backup_activity_task {
         $base = preg_quote($CFG->wwwroot . '/mod/chat', '#');
 
         // Link to the list of chats.
-        $pattern = "#(".$base."\/index.php\?id\=)([0-9]+)#";
+        $pattern = "#(" . $base . "\/index.php\?id\=)([0-9]+)#";
         $content = preg_replace($pattern, '$@CHATINDEX*$2@$', $content);
 
         // Link to chat view by moduleid.
-        $pattern = "#(".$base."\/view.php\?id\=)([0-9]+)#";
+        $pattern = "#(" . $base . "\/view.php\?id\=)([0-9]+)#";
         $content = preg_replace($pattern, '$@CHATVIEWBYID*$2@$', $content);
 
         return $content;

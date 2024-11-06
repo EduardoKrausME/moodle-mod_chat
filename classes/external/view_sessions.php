@@ -39,9 +39,9 @@ class view_sessions extends external_api {
      */
     public static function execute_parameters(): external_function_parameters {
         return new external_function_parameters([
-            'cmid'   => new external_value(PARAM_INT, 'Course module id', VALUE_REQUIRED),
-            'start'  => new external_value(PARAM_INT, 'Session start time', VALUE_DEFAULT, 0),
-            'end'    => new external_value(PARAM_INT, 'Session end time', VALUE_DEFAULT, 0),
+            'cmid' => new external_value(PARAM_INT, 'Course module id', VALUE_REQUIRED),
+            'start' => new external_value(PARAM_INT, 'Session start time', VALUE_DEFAULT, 0),
+            'end' => new external_value(PARAM_INT, 'Session end time', VALUE_DEFAULT, 0),
         ]);
     }
 
@@ -51,22 +51,27 @@ class view_sessions extends external_api {
      * @param int $cmid the chat course module id
      * @param null|int $start
      * @param null|int $end
+     *
      * @return array
-     * @throws \restricted_context_exception
+     * @throws \coding_exception
+     * @throws \core_external\restricted_context_exception
+     * @throws \dml_exception
+     * @throws \invalid_parameter_exception
+     * @throws \moodle_exception
      */
     public static function execute(int $cmid, ?int $start = 0, ?int $end = 0): array {
         global $DB;
         $warnings = [];
-        $status   = false;
+        $status = false;
         // Validate the cmid ID.
         [
-            'cmid'  => $cmid,
+            'cmid' => $cmid,
             'start' => $start,
-            'end'   => $end,
+            'end' => $end,
         ] = self::validate_parameters(self::execute_parameters(), [
-            'cmid'  => $cmid,
+            'cmid' => $cmid,
             'start' => $start,
-            'end'   => $end,
+            'end' => $end,
         ]);
         if (!$cm = get_coursemodule_from_id('chat', $cmid)) {
             throw new \moodle_exception('invalidcoursemodule', 'error');
@@ -81,28 +86,28 @@ class view_sessions extends external_api {
         // Check capability.
         if (has_capability('mod/chat:readlog', $context)) {
             $params = [
-                'context'  => $context,
+                'context' => $context,
                 'objectid' => $chat->id,
-                'other'    => [
+                'other' => [
                     'start' => $start,
-                    'end'   => $end
-                ]
+                    'end' => $end,
+                ],
             ];
-            $event  = \mod_chat\event\sessions_viewed::create($params);
+            $event = \mod_chat\event\sessions_viewed::create($params);
             $status = true;
             $event->add_record_snapshot('chat', $chat);
             $event->trigger();
         } else {
             $warnings[] = [
-                'item'        => $cm->id,
+                'item' => $cm->id,
                 'warningcode' => 'nopermissiontoseethechatlog',
-                'message'     => get_string('nopermissiontoseethechatlog', 'chat')
+                'message' => get_string('nopermissiontoseethechatlog', 'chat'),
             ];
         }
 
         $result = [
-            'status'   => $status,
-            'warnings' => $warnings
+            'status' => $status,
+            'warnings' => $warnings,
         ];
         return $result;
     }
@@ -114,8 +119,8 @@ class view_sessions extends external_api {
      */
     public static function execute_returns(): external_single_structure {
         return new external_single_structure([
-            'status'   => new external_value(PARAM_BOOL, 'status: true if success'),
-            'warnings' => new external_warnings()
+            'status' => new external_value(PARAM_BOOL, 'status: true if success'),
+            'warnings' => new external_warnings(),
         ]);
     }
 }

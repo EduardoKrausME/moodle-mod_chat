@@ -14,30 +14,37 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+/**
+ * Chat daemon
+ *
+ * @package    mod_chat
+ * @copyright  1999 onwards Martin Dougiamas  {@link http://moodle.com}
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
 define('AJAX_SCRIPT', true);
 
-require(__DIR__.'/../../config.php');
+require(__DIR__ . '/../../config.php');
 require_once(__DIR__ . '/lib.php');
 
-$action       = optional_param('action', '', PARAM_ALPHANUM);
-$beepid       = optional_param('beep', '', PARAM_RAW);
-$chatsid      = required_param('chat_sid', PARAM_ALPHANUM);
-$theme        = required_param('chat_theme', PARAM_ALPHANUMEXT);
-$chatmessage  = optional_param('chat_message', '', PARAM_RAW);
+$action = optional_param('action', '', PARAM_ALPHANUM);
+$beepid = optional_param('beep', '', PARAM_RAW);
+$chatsid = required_param('chat_sid', PARAM_ALPHANUM);
+$chatmessage = optional_param('chat_message', '', PARAM_RAW);
 $chatlasttime = optional_param('chat_lasttime', 0, PARAM_INT);
-$chatlastrow  = optional_param('chat_lastrow', 1, PARAM_INT);
+$chatlastrow = optional_param('chat_lastrow', 1, PARAM_INT);
 
 if (!confirm_sesskey()) {
     throw new moodle_exception('invalidsesskey', 'error');
 }
 
-if (!$chatuser = $DB->get_record('chat_users', array('sid' => $chatsid))) {
+if (!$chatuser = $DB->get_record('chat_users', ['sid' => $chatsid])) {
     throw new moodle_exception('notlogged', 'chat');
 }
-if (!$chat = $DB->get_record('chat', array('id' => $chatuser->chatid))) {
+if (!$chat = $DB->get_record('chat', ['id' => $chatuser->chatid])) {
     throw new moodle_exception('invaliduserid', 'error');
 }
-if (!$course = $DB->get_record('course', array('id' => $chat->course))) {
+if (!$course = $DB->get_record('course', ['id' => $chat->course])) {
     throw new moodle_exception('invalidcourseid', 'error');
 }
 if (!$cm = get_coursemodule_from_instance('chat', $chat->id, $course->id)) {
@@ -50,7 +57,7 @@ if (!isloggedin()) {
 
 // Set up $PAGE so that format_text will work properly.
 $PAGE->set_cm($cm, $course, $chat);
-$PAGE->set_url('/mod/chat/chat_ajax.php', array('chat_sid' => $chatsid));
+$PAGE->set_url('/mod/chat/chat_ajax.php', ['chat_sid' => $chatsid]);
 
 require_login($course, false, $cm);
 
@@ -59,7 +66,7 @@ require_capability('mod/chat:chat', $context);
 
 ob_start();
 header('Expires: Sun, 28 Dec 1997 09:32:45 GMT');
-header('Last-Modified: '.gmdate('D, d M Y H:i:s').' GMT');
+header('Last-Modified: ' . gmdate('D, d M Y H:i:s') . ' GMT');
 header('Cache-Control: no-cache, must-revalidate');
 header('Pragma: no-cache');
 header('Content-Type: text/html; charset=utf-8');
@@ -74,11 +81,12 @@ switch ($action) {
 
     case 'chat':
         \core\session\manager::write_close();
+        chat_login_user($chat->id, 'ajax', 0, $course);
         chat_delete_old_users();
         $chatmessage = clean_text($chatmessage, FORMAT_MOODLE);
 
         if (!empty($beepid)) {
-            $chatmessage = 'beep '.$beepid;
+            $chatmessage = 'beep ' . $beepid;
         }
 
         if (!empty($chatmessage)) {
@@ -95,7 +103,8 @@ switch ($action) {
         break;
 
     case 'update':
-        if ((time() - $chatlasttime) > $CFG->chat_old_ping) {
+        chat_login_user($chat->id, 'ajax', 0, $course);
+        if ((time() - $chatlasttime) > get_config("chat", "old_ping")) {
             chat_delete_old_users();
         }
 
@@ -106,7 +115,7 @@ switch ($action) {
         }
 
         if ($chatlasttime == 0) {
-            $chatlasttime = time() - $CFG->chat_old_ping;
+            $chatlasttime = time() - get_config("chat", "old_ping");
         }
 
         $messages = chat_get_latest_messages($chatuser, $chatlasttime);
@@ -125,12 +134,8 @@ switch ($action) {
                 if (!empty($message->issystem)) {
                     $senduserlist = true;
                 }
-                if ($html = chat_format_message_theme($message, $chatuser, $USER, $cm->groupingid, $theme)) {
+                if ($message = chat_format_message_theme($message, $chatuser, $USER, $cm->groupingid)) {
                     $message->mymessage = ($USER->id == $message->userid);
-                    $message->message  = $html->html;
-                    if (!empty($html->type)) {
-                        $message->type = $html->type;
-                    }
                 } else {
                     unset($messages[$n]);
                 }
@@ -143,10 +148,10 @@ switch ($action) {
             $response['users'] = $users;
         }
 
-        $DB->set_field('chat_users', 'lastping', time(), array('id' => $chatuser->id));
+        $DB->set_field('chat_users', 'lastping', time(), ['id' => $chatuser->id]);
 
         $response['lasttime'] = $chatnewlasttime;
-        $response['lastrow']  = $chatnewrow;
+        $response['lastrow'] = $chatnewrow;
         if ($messages) {
             $response['msgs'] = $messages;
         }

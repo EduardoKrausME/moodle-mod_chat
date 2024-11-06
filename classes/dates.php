@@ -37,19 +37,20 @@ class dates extends activity_dates {
      * Returns a list of important dates in mod_chat.
      *
      * @return array
+     * @throws \coding_exception
      */
     protected function get_dates(): array {
         $customdata = $this->cm->customdata;
-        $chat = (object) $customdata;
+        $chat = (object)$customdata;
         $chattime = $chat->chattime ?? 0;
         $now = time();
         if (!empty($chat->schedule) && $chattime > $now) {
             return [
                 [
                     'dataid' => 'chattime',
-                    'label'     => get_string('nextchattime', 'mod_chat'),
-                    'timestamp' => (int) $chattime
-                ]
+                    'label' => get_string('nextchattime', 'mod_chat'),
+                    'timestamp' => (int)$chattime,
+                ],
             ];
         }
 

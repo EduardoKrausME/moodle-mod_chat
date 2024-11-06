@@ -24,7 +24,6 @@
  */
 
 namespace mod_chat\privacy;
-defined('MOODLE_INTERNAL') || die();
 
 use context;
 use context_helper;
@@ -57,6 +56,7 @@ class provider implements
      * Returns metadata.
      *
      * @param collection $collection The initialised collection to add items to.
+     *
      * @return collection A listing of user data stored through this system.
      */
     public static function get_metadata(collection $collection): collection {
@@ -76,7 +76,7 @@ class provider implements
             'userid' => 'privacy:metadata:messages:userid',
             'message' => 'privacy:metadata:messages:message',
             'issystem' => 'privacy:metadata:messages:issystem',
-            'timestamp' => 'privacy:metadata:messages:timestamp'
+            'timestamp' => 'privacy:metadata:messages:timestamp',
         ], 'privacy:metadata:chat_messages_current');
 
         $collection->add_database_table('chat_users', [
@@ -86,7 +86,7 @@ class provider implements
             'firstping' => 'privacy:metadata:chat_users:firstping',
             'lastping' => 'privacy:metadata:chat_users:lastping',
             'lastmessageping' => 'privacy:metadata:chat_users:lastmessageping',
-            'lang' => 'privacy:metadata:chat_users:lang'
+            'lang' => 'privacy:metadata:chat_users:lang',
         ], 'privacy:metadata:chat_users');
 
         return $collection;
@@ -96,6 +96,7 @@ class provider implements
      * Get the list of contexts that contain user information for the specified user.
      *
      * @param int $userid The user to search.
+     *
      * @return contextlist $contextlist The contextlist containing the list of contexts used in this plugin.
      */
     public static function get_contexts_for_userid(int $userid): \core_privacy\local\request\contextlist {
@@ -129,7 +130,8 @@ class provider implements
     /**
      * Get the list of users who have data within a context.
      *
-     * @param   userlist    $userlist   The userlist containing the list of users who have data in this context/plugin combination.
+     * @param   userlist $userlist The userlist containing the list of users who have data in this context/plugin
+     *                             combination.
      */
     public static function get_users_in_context(userlist $userlist) {
         $context = $userlist->get_context();
@@ -139,8 +141,8 @@ class provider implements
         }
 
         $params = [
-            'instanceid'    => $context->instanceid,
-            'modulename'    => 'chat',
+            'instanceid' => $context->instanceid,
+            'modulename' => 'chat',
         ];
 
         $sql = "SELECT chm.userid
@@ -157,13 +159,16 @@ class provider implements
      * Export all user data for the specified user, in the specified contexts.
      *
      * @param approved_contextlist $contextlist The approved contexts to export information for.
+     *
+     * @throws \coding_exception
+     * @throws \dml_exception
      */
     public static function export_user_data(approved_contextlist $contextlist) {
         global $DB;
 
         $user = $contextlist->get_user();
         $userid = $user->id;
-        $cmids = array_reduce($contextlist->get_contexts(), function($carry, $context) {
+        $cmids = array_reduce($contextlist->get_contexts(), function ($carry, $context) {
             if ($context->contextlevel == CONTEXT_MODULE) {
                 $carry[] = $context->instanceid;
             }
@@ -180,7 +185,7 @@ class provider implements
         list($insql, $inparams) = $DB->get_in_or_equal($chatids, SQL_PARAMS_NAMED);
         $params = array_merge($inparams, ['userid' => $userid]);
         $recordset = $DB->get_recordset_select('chat_messages', "chatid $insql AND userid = :userid", $params, 'timestamp, id');
-        static::recordset_loop_and_export($recordset, 'chatid', [], function($carry, $record) use ($user, $chatidstocmids) {
+        static::recordset_loop_and_export($recordset, 'chatid', [], function ($carry, $record) use ($user, $chatidstocmids) {
             $message = $record->message;
             if ($record->issystem) {
                 $message = get_string('message' . $record->message, 'mod_chat', fullname($user));
@@ -192,10 +197,10 @@ class provider implements
             ];
             return $carry;
 
-        }, function($chatid, $data) use ($user, $chatidstocmids) {
+        }, function ($chatid, $data) use ($user, $chatidstocmids) {
             $context = context_module::instance($chatidstocmids[$chatid]);
             $contextdata = helper::get_context_data($context, $user);
-            $finaldata = (object) array_merge((array) $contextdata, ['messages' => $data]);
+            $finaldata = (object)array_merge((array)$contextdata, ['messages' => $data]);
             helper::export_context_files($context, $user);
             writer::with_context($context)->export_data([], $finaldata);
         });
@@ -233,7 +238,7 @@ class provider implements
         global $DB;
 
         $userid = $contextlist->get_user()->id;
-        $cmids = array_reduce($contextlist->get_contexts(), function($carry, $context) {
+        $cmids = array_reduce($contextlist->get_contexts(), function ($carry, $context) {
             if ($context->contextlevel == CONTEXT_MODULE) {
                 $carry[] = $context->instanceid;
             }
@@ -259,7 +264,7 @@ class provider implements
     /**
      * Delete multiple users within a single context.
      *
-     * @param   approved_userlist       $userlist The approved context and user information to delete information for.
+     * @param   approved_userlist $userlist The approved context and user information to delete information for.
      */
     public static function delete_data_for_users(approved_userlist $userlist) {
         global $DB;
@@ -281,6 +286,7 @@ class provider implements
      * Return a dict of chat IDs mapped to their course module ID.
      *
      * @param array $cmids The course module IDs.
+     *
      * @return array In the form of [$chatid => $cmid].
      */
     protected static function get_chat_ids_to_cmids_from_cmids(array $cmids) {
@@ -303,14 +309,17 @@ class provider implements
      * Loop and export from a recordset.
      *
      * @param moodle_recordset $recordset The recordset.
-     * @param string $splitkey The record key to determine when to export.
-     * @param mixed $initial The initial data to reduce from.
-     * @param callable $reducer The function to return the dataset, receives current dataset, and the current record.
-     * @param callable $export The function to export the dataset, receives the last value from $splitkey and the dataset.
+     * @param string $splitkey            The record key to determine when to export.
+     * @param mixed $initial              The initial data to reduce from.
+     * @param callable $reducer           The function to return the dataset, receives current dataset, and the current
+     *                                    record.
+     * @param callable $export            The function to export the dataset, receives the last value from $splitkey
+     *                                    and the dataset.
+     *
      * @return void
      */
     protected static function recordset_loop_and_export(moodle_recordset $recordset, $splitkey, $initial,
-            callable $reducer, callable $export) {
+                                                        callable $reducer, callable $export) {
 
         $data = $initial;
         $lastid = null;

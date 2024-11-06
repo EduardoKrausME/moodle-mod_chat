@@ -23,7 +23,6 @@
  */
 
 namespace mod_chat\event;
-defined('MOODLE_INTERNAL') || die();
 
 /**
  * The mod_chat sessions viewed event class.
@@ -56,6 +55,7 @@ class sessions_viewed extends \core\event\base {
      * Return localised event name.
      *
      * @return string
+     * @throws \coding_exception
      */
     public static function get_name() {
         return get_string('eventsessionsviewed', 'mod_chat');
@@ -65,9 +65,10 @@ class sessions_viewed extends \core\event\base {
      * Get URL related to the action
      *
      * @return \moodle_url
+     * @throws \moodle_exception
      */
     public function get_url() {
-        return new \moodle_url('/mod/chat/report.php', array('id' => $this->contextinstanceid));
+        return new \moodle_url('/mod/chat/report.php', ['id' => $this->contextinstanceid]);
     }
 
     /**
@@ -97,10 +98,20 @@ class sessions_viewed extends \core\event\base {
         }
     }
 
+    /**
+     * Function get_objectid_mapping
+     *
+     * @return array|string
+     */
     public static function get_objectid_mapping() {
-        return array('db' => 'chat', 'restore' => 'chat');
+        return ['db' => 'chat', 'restore' => 'chat'];
     }
 
+    /**
+     * Function get_other_mapping
+     *
+     * @return array|bool
+     */
     public static function get_other_mapping() {
         // Nothing to map.
         return false;
