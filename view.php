@@ -137,7 +137,7 @@ if (has_capability('mod/chat:chat', $context)) {
             "fullname" => fullname($USER),
             "user_picture" => $OUTPUT->user_picture($USER),
             "url" => "{$CFG->wwwroot}/user/view.php?id={$USER->id}&amp;course={$course->id}",
-            "profile" => "Administrador",
+            "profile" => profile($course->id, $USER),
         ],
         "cfg" => [
             "timer" => 2000,

@@ -948,10 +948,34 @@ function chat_format_userlist($users, $course) {
             'url' => "{$CFG->wwwroot}/user/view.php?id={$user->id}&amp;course={$course->id}",
             'picture' => $OUTPUT->user_picture($user),
             'id' => $user->id,
-            "profile" => "Administrador",
+            "profile" => profile($course->id, $user),
         ];
     }
     return $result;
+}
+
+function profile($courseid, $user) {
+    global $DB;
+    $context = context_course::instance($courseid);
+    if (!has_capability('moodle/site:config', $context, $user)) {
+        return get_string("admin");
+    } else if (has_capability('moodle/course:create', $context)) {
+        return get_string('coursecreators');
+    } else if (has_capability('moodle/course:update',$context)) {
+        return get_string('defaultcourseteacher');
+    }
+
+    $roleassignments = $DB->get_records("role_assignments", [
+        "contextid" => $context->id,
+        "userid" => $user->id,
+    ], '', 'DISTINCT roleid');
+
+    foreach ($roleassignments as $roleassignment) {
+        $role = $DB->get_record("role", ["id" => $roleassignment->roleid]);
+        return role_get_name($role);
+    }
+
+    return "??";
 }
 
 /**
