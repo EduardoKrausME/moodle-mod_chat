@@ -954,6 +954,13 @@ function chat_format_userlist($users, $course) {
     return $result;
 }
 
+/**
+ * Get the display name for the user's role in the course.
+ *
+ * @param int $courseid Course ID.
+ * @param stdClass $user User record.
+ * @return string Role name.
+ */
 function profile($courseid, $user) {
     global $DB;
     $context = context_course::instance($courseid);
@@ -961,7 +968,7 @@ function profile($courseid, $user) {
         return get_string("admin");
     } else if (has_capability('moodle/course:create', $context)) {
         return get_string('coursecreators');
-    } else if (has_capability('moodle/course:update',$context)) {
+    } else if (has_capability('moodle/course:update', $context)) {
         return get_string('defaultcourseteacher');
     }
 

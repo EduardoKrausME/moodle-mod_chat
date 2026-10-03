@@ -72,7 +72,6 @@ class restore_chat_activity_task extends restore_activity_task {
         $rules[] = new restore_decode_rule('CHATINDEX', '/mod/chat/index.php?id=$1', 'course');
 
         return $rules;
-
     }
 
     /**
