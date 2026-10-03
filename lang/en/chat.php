@@ -22,6 +22,8 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+defined('MOODLE_INTERNAL') || die;
+
 $string['activityoverview'] = 'You have upcoming chat sessions';
 $string['ajax'] = 'Version using AJAX';
 $string['autoscroll'] = 'Auto scroll';
