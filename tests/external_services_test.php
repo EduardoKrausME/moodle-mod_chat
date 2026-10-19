@@ -24,12 +24,13 @@
 
 namespace mod_chat;
 
+// phpcs:ignore moodle.Files.MoodleInternal.MoodleInternalGlobalState -- Moodle test guard.
 defined("MOODLE_INTERNAL") || die();
 
 /**
  * Tests backwards-compatible external service discovery.
  *
- * @covers \mod_chat\external\chat_services
+ * @covers \mod_chat_external
  */
 final class external_services_test extends \advanced_testcase {
     /**
@@ -46,7 +47,9 @@ final class external_services_test extends \advanced_testcase {
             "get_sessions",
             "get_session_messages",
         ];
-        $classname = \mod_chat\external\chat_services::class;
+        global $CFG;
+        require_once($CFG->dirroot . "/mod/chat/classes/external.php");
+        $classname = \mod_chat_external::class;
         foreach ($methods as $method) {
             $this->assertTrue(is_callable([$classname, $method]), $method);
             $parameters = $method . "_parameters";
@@ -80,7 +83,8 @@ final class external_services_test extends \advanced_testcase {
         ];
         foreach ($methods as $name => $method) {
             $this->assertArrayHasKey($name, $functions);
-            $this->assertSame("mod_chat\\external\\chat_services", $functions[$name]["classname"]);
+            $this->assertSame("mod_chat_external", $functions[$name]["classname"]);
+            $this->assertSame("mod/chat/classes/external.php", $functions[$name]["classpath"]);
             $this->assertSame($method, $functions[$name]["methodname"]);
         }
     }
