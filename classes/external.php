@@ -562,6 +562,7 @@ class mod_chat_external extends external_api {
             $chats = get_all_instances_in_courses("chat", $courses);
             foreach ($chats as $chat) {
                 $chatcontext = context_module::instance($chat->coursemodule);
+                self::validate_context($chatcontext);
 
                 $chatdetails = helper_for_get_mods_by_courses::standard_coursemodule_element_values($chat, 'mod_chat');
 
