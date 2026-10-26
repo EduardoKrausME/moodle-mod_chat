@@ -7,25 +7,6 @@ The Chat plugin allows real-time, text-based discussions among users within a Mo
 
 ---
 
-### Installation & Configuration
-
-To set up the Chat plugin:
-
-1. Go to **Site administration -> Plugins -> Activity modules -> Chat -> Settings**.
-
-2. Set the method to "sockets" and configure the ports and other settings as needed.
-
-3. Start the chat server using the following command in your Unix terminal:
-
-   ```bash
-   cd moodle/mod/chat
-   php chatd.php --start &
-   ```
-
-4. Open a chat room within a course to verify the setup.
-
----
-
 ### Known Issues
 
 - **User List**: Display issues may occur.
